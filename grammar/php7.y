@@ -648,6 +648,7 @@ for_expr:
 
 expr:
       variable                                              { $$ = $1; }
+    | callback                                              { $$ = $1; }
     | list_expr '=' expr                                    { $$ = Expr\Assign[$1, $3]; }
     | array_short_syntax '=' expr                           { $$ = Expr\Assign[$1, $3]; }
     | variable '=' expr                                     { $$ = Expr\Assign[$1, $3]; }
@@ -873,6 +874,19 @@ scalar:
             parseEncapsed($2, '"', true); $$ = new Scalar\Encapsed($2, $attrs); }
     | T_START_HEREDOC encaps_list T_END_HEREDOC
           { $$ = $this->parseDocString($1, $2, $3, attributes(), stackAttributes(#3), true); }
+;
+
+callback:
+    | T_FN T_PAAMAYIM_NEKUDOTAYIM callback_subject    { $$ = $3; }
+;
+
+callback_subject:
+    | dereferencable T_OBJECT_OPERATOR property_name
+          { $$ = Expr\MethodCallback[$1, $3]; }
+    | class_name T_PAAMAYIM_NEKUDOTAYIM member_name
+          { $$ = Expr\StaticCallback[$1, $3]; }
+    | name
+          { $$ = Expr\FuncCallback[$1]; }
 ;
 
 optional_expr:

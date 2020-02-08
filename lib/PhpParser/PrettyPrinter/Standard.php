@@ -486,9 +486,18 @@ class Standard extends PrettyPrinterAbstract
              . '(' . $this->pMaybeMultiline($node->args) . ')';
     }
 
+    protected function pExpr_FuncCallback(Expr\FuncCallback $node) {
+        return 'fn::' . $this->pCallLhs($node->name);
+    }
+
     protected function pExpr_MethodCall(Expr\MethodCall $node) {
         return $this->pDereferenceLhs($node->var) . '->' . $this->pObjectProperty($node->name)
              . '(' . $this->pMaybeMultiline($node->args) . ')';
+    }
+
+    protected function pExpr_MethodCallback(Expr\MethodCallback $node) {
+        return 'fn::' . $this->pDereferenceLhs($node->var)
+             . '->' . $this->pObjectProperty($node->name);
     }
 
     protected function pExpr_StaticCall(Expr\StaticCall $node) {
@@ -499,6 +508,15 @@ class Standard extends PrettyPrinterAbstract
                    : '{' . $this->p($node->name) . '}')
                 : $node->name)
              . '(' . $this->pMaybeMultiline($node->args) . ')';
+    }
+
+    protected function pExpr_StaticCallback(Expr\StaticCallback $node) {
+        return 'fn::' . $this->pDereferenceLhs($node->class) . '::'
+             . ($node->name instanceof Expr
+                ? ($node->name instanceof Expr\Variable
+                   ? $this->p($node->name)
+                   : '{' . $this->p($node->name) . '}')
+                : $node->name);
     }
 
     protected function pExpr_Empty(Expr\Empty_ $node) {
